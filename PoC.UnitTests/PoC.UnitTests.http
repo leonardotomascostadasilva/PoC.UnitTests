@@ -1,0 +1,6 @@
+@PoC.UnitTests_HostAddress = http://localhost:5162
+
+GET {{PoC.UnitTests_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
