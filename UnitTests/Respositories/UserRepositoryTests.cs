@@ -23,7 +23,7 @@ namespace UnitTests.Respositories
         }
 
         [Fact]
-        public async Task GetByEmailAsync_ReturnsUser_WhenUserExists()
+        public async Task GetByEmailAsync_WhenUserExists_ReturnsUser()
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
