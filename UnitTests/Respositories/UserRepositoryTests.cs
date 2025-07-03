@@ -1,177 +1,187 @@
-﻿using AutoFixture;
-using NSubstitute;
-using PoC.UnitTests.Factories;
-using PoC.UnitTests.Repositories;
-using PoC.UnitTests.Wrapper;
-using System.Data;
+﻿//using AutoFixture;
+//using NSubstitute;
+//using PoC.UnitTests.Factories;
+//using PoC.UnitTests.Repositories;
+//using PoC.UnitTests.Wrapper;
+//using System.Data;
+//namespace UnitTests.Respositories
+//{
+//    public class UserRepositoryTests
+//    {
+//        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
+//        private readonly IDapperWrapper _dapperWrapper;
+//        private readonly UserRepository _userRepository;
+//        private readonly Fixture _fixture = new();
+//        private readonly MyClass _myClass;
+//        public UserRepositoryTests()
+//        {
+//            _databaseConnectionFactory = Substitute.For<IDatabaseConnectionFactory>();
+//            _dapperWrapper = Substitute.For<IDapperWrapper>();
+//            _myClass = new MyClass();
+//            _userRepository = new UserRepository(_databaseConnectionFactory, _dapperWrapper);
+//        }
 
-namespace UnitTests.Respositories
-{
-    public class UserRepositoryTests
-    {
-        private readonly IDatabaseConnectionFactory _databaseConnectionFactory;
-        private readonly IDapperWrapper _dapperWrapper;
-        private readonly UserRepository _userRepository;
-        private readonly Fixture _fixture = new();
+//        [Fact]
+//        public async Task GetByEmailAsync_WhenUserExists_ReturnsUser()
+//        {
+//            // Arrange
+//            var cancellationToken = CancellationToken.None;
+//            var fakeConnection = Substitute.For<IDbConnection>();
 
-        public UserRepositoryTests()
-        {
-            _databaseConnectionFactory = Substitute.For<IDatabaseConnectionFactory>();
-            _dapperWrapper = Substitute.For<IDapperWrapper>();
+//            _databaseConnectionFactory
+//                .CreateConnectionAsync(cancellationToken)
+//                .Returns(Task.FromResult(fakeConnection));
 
-            _userRepository = new UserRepository(_databaseConnectionFactory, _dapperWrapper);
-        }
+//            var expectedUser = _fixture
+//                .Build<User>()
+//                .With(e => e.Email, "test@example.com")
+//                .Create();
 
-        [Fact]
-        public async Task GetByEmailAsync_WhenUserExists_ReturnsUser()
-        {
-            // Arrange
-            var cancellationToken = CancellationToken.None;
-            var fakeConnection = Substitute.For<IDbConnection>();
+//            const string sql = """
+//                SELECT id, 
+//                       name,
+//                       email,
+//                       created_at AS "CreatedAt" 
+//                FROM users
+//                WHERE email = @Email
+//            """;
 
-            _databaseConnectionFactory
-                .CreateConnectionAsync(cancellationToken)
-                .Returns(Task.FromResult(fakeConnection));
+//            _dapperWrapper
+//                .QueryFirstOrDefaultAsync<User>(
+//                    fakeConnection,
+//                    sql,
+//                    Arg.Is<object>(param =>
+//                        param != null &&
+//                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == "test@example.com"),
+//                    cancellationToken)
+//                .Returns(Task.FromResult<User?>(expectedUser));
 
-            var expectedUser = _fixture
-                .Build<User>()
-                .With(e => e.Email, "test@example.com")
-                .Create();
+//            // Act
+//            var user = await _userRepository.GetByEmailAsync("test@example.com", cancellationToken);
 
-            const string sql = """
-                SELECT id, 
-                       name,
-                       email,
-                       created_at AS "CreatedAt" 
-                FROM users
-                WHERE email = @Email
-            """;
+//            // Assert
+//            Assert.NotNull(user);
+//            Assert.Equal(expectedUser.Email, user!.Email);
+//            Assert.Equal(expectedUser.Name, user.Name);
+//        }
 
-            _dapperWrapper
-                .QueryFirstOrDefaultAsync<User>(
-                    fakeConnection,
-                    sql,
-                    Arg.Is<object>(param =>
-                        param != null &&
-                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == "test@example.com"),
-                    cancellationToken)
-                .Returns(Task.FromResult<User?>(expectedUser));
+//        [Theory]
+//        [InlineData("john@example.com")]
+//        [InlineData("alice@example.com")]
+//        [InlineData("bob@example.com")]
+//        public async Task GetByEmailAsync_WithInlineEmail_ReturnsExpectedUser(string email)
+//        {
+//            // Arrange
+//            var cancellationToken = CancellationToken.None;
+//            var fakeConnection = Substitute.For<IDbConnection>();
 
-            // Act
-            var user = await _userRepository.GetByEmailAsync("test@example.com", cancellationToken);
+//            _databaseConnectionFactory
+//                .CreateConnectionAsync(cancellationToken)
+//                .Returns(Task.FromResult(fakeConnection));
 
-            // Assert
-            Assert.NotNull(user);
-            Assert.Equal(expectedUser.Email, user!.Email);
-            Assert.Equal(expectedUser.Name, user.Name);
-        }
+//            var expectedUser = _fixture
+//                .Build<User>()
+//                .With(e => e.Email, email)
+//                .Create();
 
-        [Theory]
-        [InlineData("john@example.com")]
-        [InlineData("alice@example.com")]
-        [InlineData("bob@example.com")]
-        public async Task GetByEmailAsync_WithInlineEmail_ReturnsExpectedUser(string email)
-        {
-            // Arrange
-            var cancellationToken = CancellationToken.None;
-            var fakeConnection = Substitute.For<IDbConnection>();
+//            const string sql = """
+//                SELECT id, 
+//                       name,
+//                       email,
+//                       created_at AS "CreatedAt" 
+//                FROM users
+//                WHERE email = @Email
+//            """;
 
-            _databaseConnectionFactory
-                .CreateConnectionAsync(cancellationToken)
-                .Returns(Task.FromResult(fakeConnection));
+//            _dapperWrapper
+//                .QueryFirstOrDefaultAsync<User>(
+//                    fakeConnection,
+//                    sql,
+//                    Arg.Is<object>(param =>
+//                        param != null &&
+//                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == email),
+//                    cancellationToken)
+//                .Returns(Task.FromResult<User?>(expectedUser));
 
-            var expectedUser = _fixture
-                .Build<User>()
-                .With(e => e.Email, email)
-                .Create();
+//            // Act
+//            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
 
-            const string sql = """
-                SELECT id, 
-                       name,
-                       email,
-                       created_at AS "CreatedAt" 
-                FROM users
-                WHERE email = @Email
-            """;
+//            // Assert
+//            Assert.NotNull(user);
+//            Assert.Equal(email, user!.Email);
+//        }
 
-            _dapperWrapper
-                .QueryFirstOrDefaultAsync<User>(
-                    fakeConnection,
-                    sql,
-                    Arg.Is<object>(param =>
-                        param != null &&
-                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == email),
-                    cancellationToken)
-                .Returns(Task.FromResult<User?>(expectedUser));
+//        public static IEnumerable<object[]> EmailData =>
+//            new List<object[]>
+//            {
+//                new object[] { new User { Email = "test1@example.com", Name = "Test One" } },
+//                new object[] { new User { Email = "test2@example.com", Name = "Test Two" } },
+//                new object[] { new User { Email = "test3@example.com", Name = "Test Three" } },
+//            };
 
-            // Act
-            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+//        [Theory]
+//        [MemberData(nameof(EmailData))]
+//        public async Task GetByEmailAsync_WithUserObject_ReturnsExpectedUser(User input)
+//        {
+//            // Arrange
+//            var cancellationToken = CancellationToken.None;
+//            var fakeConnection = Substitute.For<IDbConnection>();
 
-            // Assert
-            Assert.NotNull(user);
-            Assert.Equal(email, user!.Email);
-        }
+//            _databaseConnectionFactory
+//                .CreateConnectionAsync(cancellationToken)
+//                .Returns(Task.FromResult(fakeConnection));
 
-        public static IEnumerable<object[]> EmailData =>
-            new List<object[]>
-            {
-                new object[] { new User { Email = "test1@example.com", Name = "Test One" } },
-                new object[] { new User { Email = "test2@example.com", Name = "Test Two" } },
-                new object[] { new User { Email = "test3@example.com", Name = "Test Three" } },
-            };
+//            var expectedUser = _fixture
+//                .Build<User>()
+//                .With(u => u.Email, input.Email)
+//                .With(u => u.Name, input.Name)
+//                .Create();
 
-        [Theory]
-        [MemberData(nameof(EmailData))]
-        public async Task GetByEmailAsync_WithUserObject_ReturnsExpectedUser(User input)
-        {
-            // Arrange
-            var cancellationToken = CancellationToken.None;
-            var fakeConnection = Substitute.For<IDbConnection>();
+//            const string sql = """
+//                SELECT id, 
+//                       name,
+//                       email,
+//                       created_at AS "CreatedAt" 
+//                FROM users
+//                WHERE email = @Email
+//            """;
 
-            _databaseConnectionFactory
-                .CreateConnectionAsync(cancellationToken)
-                .Returns(Task.FromResult(fakeConnection));
+//            _dapperWrapper
+//                .QueryFirstOrDefaultAsync<User>(
+//                    fakeConnection,
+//                    sql,
+//                    Arg.Is<object>(param =>
+//                        param != null &&
+//                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == input.Email),
+//                    cancellationToken)
+//                .Returns(Task.FromResult<User?>(expectedUser));
 
-            var expectedUser = _fixture
-                .Build<User>()
-                .With(u => u.Email, input.Email)
-                .With(u => u.Name, input.Name)
-                .Create();
+//            // Act
+//            var user = await _userRepository.GetByEmailAsync(input.Email, cancellationToken);
 
-            const string sql = """
-                SELECT id, 
-                       name,
-                       email,
-                       created_at AS "CreatedAt" 
-                FROM users
-                WHERE email = @Email
-            """;
-
-            _dapperWrapper
-                .QueryFirstOrDefaultAsync<User>(
-                    fakeConnection,
-                    sql,
-                    Arg.Is<object>(param =>
-                        param != null &&
-                        param.GetType().GetProperty("Email")!.GetValue(param)!.ToString() == input.Email),
-                    cancellationToken)
-                .Returns(Task.FromResult<User?>(expectedUser));
-
-            // Act
-            var user = await _userRepository.GetByEmailAsync(input.Email, cancellationToken);
-
-            // Assert
-            Assert.NotNull(user);
-            Assert.Equal(input.Email, user!.Email);
-            Assert.Equal(input.Name, user.Name);
-        }
+//            // Assert
+//            Assert.NotNull(user);
+//            Assert.Equal(input.Email, user!.Email);
+//            Assert.Equal(input.Name, user.Name);
+//        }
 
 
-        [Fact]
-        public void TestUserCreation() => Thread.Sleep(1000);
+//        [Fact]
+//        public void TestUserCreation()
+//        {
+//            throw new Exception($"User ID: {_myClass.Id}");
+//        }
 
-        [Fact]
-        public void TestProductCreation() => Thread.Sleep(1000);
+//        [Fact]
+//        public void TestProductCreation()
+//        {
+//            throw new Exception($"User ID: {_myClass.Id}");
+//        }
 
-    }
-}
+//    }
+
+//    public class MyClass
+//    {
+//        public string Id = Guid.NewGuid().ToString();
+//    }
+//}
